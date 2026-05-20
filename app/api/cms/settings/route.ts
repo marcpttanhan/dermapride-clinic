@@ -13,26 +13,26 @@ export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
   const key   = searchParams.get('key')
   const draft = searchParams.get('draft') === '1'
-  const col   = draft ? 'draft_value' : 'published_value'
 
   const db = getSupabaseServiceClient()
 
   if (key) {
     const { data, error } = await db
       .from('site_settings')
-      .select(col)
+      .select('key, draft_value, published_value')
       .eq('key', key)
       .single()
     if (error) return NextResponse.json({ error: error.message }, { status: 404 })
-    return NextResponse.json({ key, value: data[col] })
+    const value = draft ? data.draft_value : data.published_value
+    return NextResponse.json({ key, value })
   }
 
   // Return all settings
-  const { data, error } = await db.from('site_settings').select(`key, ${col}`)
+  const { data, error } = await db.from('site_settings').select('key, draft_value, published_value')
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   const map: Record<string, unknown> = {}
-  ;(data ?? []).forEach(row => { map[row.key] = row[col] })
+  ;(data ?? []).forEach(row => { map[row.key] = draft ? row.draft_value : row.published_value })
   return NextResponse.json(map)
 }
 
