@@ -1,0 +1,5 @@
+/* DermaPride Clinics — Global stylesheet entry point */
+/* All original design CSS is preserved exactly. */
+
+@import './brand.css';
+@import './editorial.css';
