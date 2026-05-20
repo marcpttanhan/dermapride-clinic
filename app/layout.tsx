@@ -1,11 +1,10 @@
 import type { Metadata } from 'next'
+import type { ReactNode } from 'react'
 import { Fraunces, JetBrains_Mono } from 'next/font/google'
 import '../styles/globals.css'
 
-// Google Fonts — loaded via next/font for optimal performance
 const fraunces = Fraunces({
   subsets: ['latin'],
-  axes: ['opsz', 'SOFT', 'wght'],
   variable: '--font-fraunces',
   display: 'swap',
 })
@@ -34,7 +33,7 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="th" className={`${fraunces.variable} ${jetbrainsMono.variable}`}>
       <head>

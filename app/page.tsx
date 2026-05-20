@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { getHomePageData } from '@/lib/cms'
-import { REVALIDATE_SECONDS } from '@/lib/cms'
 
 import Nav from '@/components/site/Nav'
 import Hero from '@/components/site/Hero'
@@ -20,7 +19,7 @@ import Footer from '@/components/site/Footer'
 import Floating from '@/components/site/Floating'
 import ScrollRevealInit from '@/components/site/ScrollRevealInit'
 
-export const revalidate = REVALIDATE_SECONDS
+export const revalidate = 60;
 
 export async function generateMetadata(): Promise<Metadata> {
   const data = await getHomePageData()

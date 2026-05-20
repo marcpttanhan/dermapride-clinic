@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { getProcedureBySlug, getAllProcedureSlugs, REVALIDATE_SECONDS } from '@/lib/cms'
+import { getProcedureBySlug, getAllProcedureSlugs } from '@/lib/cms'
 import Nav from '@/components/site/Nav'
 import Footer from '@/components/site/Footer'
 import Floating from '@/components/site/Floating'
@@ -9,7 +9,7 @@ import ScrollRevealInit from '@/components/site/ScrollRevealInit'
 import { getHomePageData } from '@/lib/cms'
 import '../../../styles/procedure.css'
 
-export const revalidate = REVALIDATE_SECONDS
+export const revalidate = 60
 
 interface Props {
   params: Promise<{ slug: string }>
