@@ -30,7 +30,7 @@ export async function middleware(req: NextRequest) {
 
   try {
     const secret = new TextEncoder().encode(
-      process.env.ADMIN_JWT_SECRET ?? 'insecure-dev-secret-change-me'
+      process.env.ADMIN_JWT_SECRET ?? 'insecure-dev-secret-change-me-32chars+'
     )
     await jwtVerify(token, secret)
     return NextResponse.next()

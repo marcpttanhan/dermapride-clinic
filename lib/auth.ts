@@ -3,11 +3,12 @@ import { cookies } from 'next/headers'
 import { getSupabaseServiceClient } from './supabase/server'
 import type { AdminUser } from './supabase/types'
 
-const COOKIE_NAME = process.env.ADMIN_COOKIE_NAME ?? 'dp_admin_session'
-const JWT_SECRET  = new TextEncoder().encode(
+export const COOKIE_NAME = process.env.ADMIN_COOKIE_NAME ?? 'dp_admin_session'
+export const SESSION_TTL  = Number(process.env.ADMIN_SESSION_TTL ?? 86400)  // 24h
+
+const JWT_SECRET = new TextEncoder().encode(
   process.env.ADMIN_JWT_SECRET ?? 'insecure-dev-secret-change-me-32chars+'
 )
-const SESSION_TTL = Number(process.env.ADMIN_SESSION_TTL ?? 86400)  // 24h
 
 export interface SessionPayload {
   sub:   string   // admin_user.id
@@ -29,18 +30,8 @@ export async function verifyToken(token: string): Promise<SessionPayload> {
   return payload as unknown as SessionPayload
 }
 
-// ── Cookie helpers ────────────────────────────────────────
-export async function setSessionCookie(token: string) {
-  const cookieStore = await cookies()
-  cookieStore.set(COOKIE_NAME, token, {
-    httpOnly: true,
-    secure:   process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge:   SESSION_TTL,
-    path:     '/',
-  })
-}
-
+// ── Cookie helpers (Server Actions only) ─────────────────
+// Route Handlers must set cookies directly on NextResponse — see login/logout routes.
 export async function clearSessionCookie() {
   const cookieStore = await cookies()
   cookieStore.delete(COOKIE_NAME)
@@ -51,7 +42,7 @@ export async function getSessionToken(): Promise<string | undefined> {
   return cookieStore.get(COOKIE_NAME)?.value
 }
 
-// ── Session resolver (for Server Components / API routes) ─
+// ── Session resolver (Server Components / API routes) ─────
 export async function getAdminSession(): Promise<SessionPayload | null> {
   const token = await getSessionToken()
   if (!token) return null
@@ -62,7 +53,7 @@ export async function getAdminSession(): Promise<SessionPayload | null> {
   }
 }
 
-// ── Login ──────────────────────────────────────────────────
+// ── Login ─────────────────────────────────────────────────
 export async function loginAdmin(
   email: string,
   password: string
@@ -81,19 +72,29 @@ export async function loginAdmin(
   const valid = await compare(password, user.password_hash)
   if (!valid) return { error: 'Invalid credentials' }
 
-  // Update last_login
-  await db.from('admin_users').update({ last_login: new Date().toISOString() }).eq('id', user.id)
+  // Update last_login (non-blocking — don't await, don't let it delay the response)
+  db.from('admin_users')
+    .update({ last_login: new Date().toISOString() })
+    .eq('id', user.id)
+    .then(() => {/* fire and forget */})
 
   const payload: SessionPayload = { sub: user.id, email: user.email, role: user.role }
   const token = await signToken(payload)
 
   return {
-    user: { id: user.id, email: user.email, role: user.role as 'admin' | 'editor', name: user.name, created_at: '', last_login: null },
+    user: {
+      id:         user.id,
+      email:      user.email,
+      role:       user.role as 'admin' | 'editor',
+      name:       user.name,
+      created_at: '',
+      last_login: null,
+    },
     token,
   }
 }
 
-// ── Password hash helper (for seeding / user management) ─
+// ── Password hash helper ──────────────────────────────────
 export async function hashPassword(plain: string): Promise<string> {
   const { hash } = await import('bcryptjs')
   return hash(plain, 12)

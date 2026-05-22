@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { loginAdmin, setSessionCookie } from '@/lib/auth'
+import { loginAdmin, COOKIE_NAME, SESSION_TTL } from '@/lib/auth'
 
 const schema = z.object({
   email:    z.string().email(),
@@ -16,13 +16,12 @@ export async function POST(req: NextRequest) {
 
   const result = await loginAdmin(parsed.data.email, parsed.data.password)
   if ('error' in result) {
-    // Constant-time response to prevent timing attacks
     return NextResponse.json({ error: result.error }, { status: 401 })
   }
 
-  await setSessionCookie(result.token)
-
-  return NextResponse.json({
+  // Set cookie directly on the response — cookies() from next/headers does not
+  // emit Set-Cookie headers from Route Handlers in Next.js 15 App Router.
+  const response = NextResponse.json({
     user: {
       id:    result.user.id,
       email: result.user.email,
@@ -30,4 +29,14 @@ export async function POST(req: NextRequest) {
       name:  result.user.name,
     },
   })
+
+  response.cookies.set(COOKIE_NAME, result.token, {
+    httpOnly: true,
+    secure:   process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge:   SESSION_TTL,
+    path:     '/',
+  })
+
+  return response
 }
