@@ -4,11 +4,11 @@
 -- Or:  psql <connection-string> -f supabase/seed.sql
 -- ============================================================
 
--- Admin user (password: admin123  — CHANGE IN PRODUCTION)
--- Hash generated with: bcryptjs.hashSync('admin123', 12)
+-- Admin user (password: DERMAPRIDE4CLINIC)
+-- Hash generated with: bcryptjs.hashSync('DERMAPRIDE4CLINIC', 12)
 INSERT INTO admin_users (email, password_hash, role, name) VALUES
-  ('admin@dermapride.com',
-   '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TiGniYE6Qvd4cPMHN8mFN8C1FzUa',
+  ('admin',
+   '$2b$12$QM4cRkT5ArG.OPqub53zn.7Hs07PvRnB2Di7YP4w.JJagOEr807FO',
    'admin', 'Admin');
 
 -- ── Site Settings ──────────────────────────────────────────

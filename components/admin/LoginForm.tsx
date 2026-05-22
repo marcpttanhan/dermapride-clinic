@@ -60,12 +60,12 @@ export default function LoginForm() {
           <div style={{display:'flex', flexDirection:'column', gap:'16px', marginBottom:'24px'}}>
             <div>
               <label style={{display:'block', fontFamily:'var(--dp-mono)', fontSize:'10px', letterSpacing:'0.18em', textTransform:'uppercase', opacity:'0.7', marginBottom:'8px'}}>
-                Email
+                Username
               </label>
               <input
-                name="email" type="email" required autoComplete="username"
+                name="email" type="text" required autoComplete="username"
                 style={{width:'100%', padding:'14px 16px', border:'1px solid var(--cine-rule)', borderRadius:'6px', background:'var(--cine-paper)', fontFamily:'var(--dp-sans)', fontSize:'14px', color:'var(--cine-ink)', outline:'none', boxSizing:'border-box'}}
-                placeholder="admin@dermapride.com"
+                placeholder="ADMIN"
               />
             </div>
             <div>
