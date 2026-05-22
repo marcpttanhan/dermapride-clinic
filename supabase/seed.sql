@@ -7,7 +7,7 @@
 -- Admin user (password: DERMAPRIDE4CLINIC)
 -- Hash generated with: bcryptjs.hashSync('DERMAPRIDE4CLINIC', 12)
 INSERT INTO admin_users (email, password_hash, role, name) VALUES
-  ('admin',
+  ('admin@dermapride.com',
    '$2b$12$QM4cRkT5ArG.OPqub53zn.7Hs07PvRnB2Di7YP4w.JJagOEr807FO',
    'admin', 'Admin');
 

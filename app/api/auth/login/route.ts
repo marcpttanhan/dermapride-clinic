@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { loginAdmin, setSessionCookie } from '@/lib/auth'
 
 const schema = z.object({
-  email:    z.string().min(1),
+  email:    z.string().email(),
   password: z.string().min(1),
 })
 
