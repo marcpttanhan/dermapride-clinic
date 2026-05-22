@@ -1,10 +1,9 @@
 'use client'
 import { useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 
 export default function LoginForm() {
-  const router      = useRouter()
-  const params      = useSearchParams()
+  const params  = useSearchParams()
   const [error, setError]     = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -21,7 +20,9 @@ export default function LoginForm() {
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error || 'Login failed'); return }
-      router.push(params.get('next') || '/admin/dashboard')
+      // Hard navigation: bypass App Router cache so the fresh session cookie is
+      // sent with the next request and middleware sees it immediately.
+      window.location.href = params.get('next') || '/admin/dashboard'
     } catch {
       setError('Network error — please try again')
     } finally {
