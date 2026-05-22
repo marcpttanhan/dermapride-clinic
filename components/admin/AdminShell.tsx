@@ -226,7 +226,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   )
 }
 
-function Input({ value, onChange, ...props }: React.InputHTMLAttributes<HTMLInputElement> & { value: string; onChange: (v: string) => void }) {
+function Input({ value, onChange, ...props }: Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> & { value: string; onChange: (v: string) => void }) {
   return (
     <input
       {...props}
@@ -484,7 +484,7 @@ function FaqTab({ s, save }: { s: Record<string, Record<string, unknown>>; save:
 
 function BranchesTab({ s, save, upload }: { s: Record<string, Record<string, unknown>>; save: (k: string, v: unknown) => void; upload: (f: File) => Promise<string | null> }) {
   type BranchList = Array<Record<string,string>>
-  const [branches, setBranches] = useState<BranchList>((s['home.branches'] as BranchList) || [])
+  const [branches, setBranches] = useState<BranchList>((s['home.branches'] as unknown as BranchList) || [])
 
   function updateBranch(idx: number, key: string, val: string) {
     setBranches(prev => {
@@ -517,7 +517,7 @@ function BranchesTab({ s, save, upload }: { s: Record<string, Record<string, unk
 
 function HoursTab({ s, save }: { s: Record<string, Record<string, unknown>>; save: (k: string, v: unknown) => void }) {
   type HourRow = { day: string; th: string; open: string; close: string; closed: boolean }
-  const [hours, setHours] = useState<HourRow[]>((s['home.hours'] as HourRow[]) || [])
+  const [hours, setHours] = useState<HourRow[]>((s['home.hours'] as unknown as HourRow[]) || [])
 
   function update(idx: number, key: string, val: string | boolean) {
     setHours(prev => {
@@ -547,13 +547,14 @@ function HoursTab({ s, save }: { s: Record<string, Record<string, unknown>>; sav
   )
 }
 
+type Review = { id: string; name: string; age: string; treatment: string; body: string; stars: number; image_url: string }
+
 function ReviewsTab({ reviews, setReviews, upload, showToast }: {
   reviews: unknown[]
   setReviews: React.Dispatch<React.SetStateAction<unknown[]>>
   upload: (f: File) => Promise<string | null>
   showToast: (m: string) => void
 }) {
-  type Review = { id: string; name: string; age: string; treatment: string; body: string; stars: number; image_url: string }
   const list = reviews as Review[]
 
   async function save(r: Review) {
@@ -589,7 +590,7 @@ function ReviewsTab({ reviews, setReviews, upload, showToast }: {
   )
 }
 
-function ReviewCard({ r, idx, onSave, onRemove, upload }: { r: {id:string;name:string;age:string;treatment:string;body:string;stars:number;image_url:string}; idx: number; onSave: (r: typeof r) => void; onRemove: () => void; upload: (f: File) => Promise<string | null> }) {
+function ReviewCard({ r, idx, onSave, onRemove, upload }: { r: Review; idx: number; onSave: (r: Review) => void; onRemove: () => void; upload: (f: File) => Promise<string | null> }) {
   const [d, setD] = useState(r)
   const sd = (k: string) => (v: string | number) => setD(prev => ({ ...prev, [k]: v }))
 

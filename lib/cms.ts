@@ -9,6 +9,7 @@ import type {
   HomePageData, HeroSettings, DoctorSettings, ContactSettings,
   BranchSettings, HourRow, PhilosophySettings, ThemeSettings,
   SeoSettings, ProcedureRow, ReviewRow,
+  ResultItem, OfferItem, FaqItem,
 } from './supabase/types'
 
 // Revalidation interval for ISR (60 s keeps the site fresh without hammering DB)
@@ -17,24 +18,21 @@ export const REVALIDATE_SECONDS = 60
 // ── Read helpers ──────────────────────────────────────────
 async function getSetting<T>(key: string, draft = false): Promise<T | null> {
   const db = await getSupabaseServerClient()
-  const col = draft ? 'draft_value' : 'published_value'
   const { data, error } = await db
     .from('site_settings')
-    .select(col)
+    .select('draft_value, published_value')
     .eq('key', key)
     .single()
   if (error || !data) return null
-  return data[col] as T
+  return (draft ? data.draft_value : data.published_value) as T
 }
 
 // ── Homepage data ────────────────────────────────────────
 export async function getHomePageData(draft = false): Promise<HomePageData> {
   const db = await getSupabaseServerClient()
-  const col = draft ? 'draft_value' : 'published_value'
-
   // Parallel fetch: settings + procedures + reviews
   const [settingsRes, proceduresRes, reviewsRes] = await Promise.all([
-    db.from('site_settings').select(`key, ${col}`).in('key', [
+    db.from('site_settings').select('key, draft_value, published_value').in('key', [
       'home.hero', 'home.doctor', 'home.contact', 'home.branches',
       'home.hours', 'home.philosophy', 'home.results', 'home.offers',
       'home.faq', 'theme', 'seo.home',
@@ -53,7 +51,7 @@ export async function getHomePageData(draft = false): Promise<HomePageData> {
   // Convert settings array → map
   const settingsMap: Record<string, unknown> = {}
   ;(settingsRes.data ?? []).forEach((row: Record<string, unknown>) => {
-    settingsMap[row.key as string] = row[col]
+    settingsMap[row.key as string] = draft ? row.draft_value : row.published_value
   })
 
   return {
@@ -63,9 +61,9 @@ export async function getHomePageData(draft = false): Promise<HomePageData> {
     branches:   (settingsMap['home.branches']   as BranchSettings[])   ?? [],
     hours:      (settingsMap['home.hours']      as HourRow[])          ?? [],
     philosophy: (settingsMap['home.philosophy'] as PhilosophySettings) ?? {} as PhilosophySettings,
-    results:    (settingsMap['home.results']    as { items: ReturnType<typeof Array>[] }) ?? { items: [] },
-    offers:     (settingsMap['home.offers']     as { items: ReturnType<typeof Array>[] }) ?? { items: [] },
-    faq:        (settingsMap['home.faq']        as { items: ReturnType<typeof Array>[] }) ?? { items: [] },
+    results:    (settingsMap['home.results']    as { items: ResultItem[] })  ?? { items: [] },
+    offers:     (settingsMap['home.offers']     as { items: OfferItem[] })   ?? { items: [] },
+    faq:        (settingsMap['home.faq']        as { items: FaqItem[] })     ?? { items: [] },
     theme:      (settingsMap['theme']           as ThemeSettings)      ?? {} as ThemeSettings,
     seo:        (settingsMap['seo.home']        as SeoSettings)        ?? {} as SeoSettings,
     procedures: (proceduresRes.data ?? []) as ProcedureRow[],
@@ -100,7 +98,8 @@ export async function getProcedureBySlug(
 }
 
 export async function getAllProcedureSlugs(): Promise<string[]> {
-  const db = await getSupabaseServerClient()
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return []
+  const db = getSupabaseServiceClient()
   const { data } = await db.from('procedures').select('slug').eq('visible', true)
   return (data ?? []).map((r: { slug: string }) => r.slug)
 }
@@ -141,21 +140,21 @@ export async function publishSetting(key: string) {
 
 export async function publishAllSettings() {
   const db = getSupabaseServiceClient()
-  return db.rpc('publish_all_settings').throwOnError()
-    .catch(() =>
-      // Fallback if RPC not set up: update individually
-      db.from('site_settings').select('key, draft_value').then(({ data }) => {
-        if (!data) return
-        return Promise.all(
-          data.map(row =>
-            db.from('site_settings').update({
-              published_value: row.draft_value,
-              published_at: new Date().toISOString(),
-            }).eq('key', row.key)
-          )
-        )
-      })
+  try {
+    await db.rpc('publish_all_settings').throwOnError()
+  } catch {
+    // Fallback if RPC not set up: update individually
+    const { data } = await db.from('site_settings').select('key, draft_value')
+    if (!data) return
+    await Promise.all(
+      data.map(row =>
+        db.from('site_settings').update({
+          published_value: row.draft_value,
+          published_at: new Date().toISOString(),
+        }).eq('key', row.key)
+      )
     )
+  }
 }
 
 // ── Revalidation ──────────────────────────────────────────
