@@ -30,6 +30,20 @@ export default function Doctor({ doctor }: Props) {
 
             <blockquote className="dpe-doctor-quote">{doctor.quote}</blockquote>
 
+            <div className="dpe-doctor-signature">
+              <a
+                href={doctor.verificationUrl || 'https://www.mct.or.th/'}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{fontFamily:'var(--dp-mono)', fontSize:'11px', letterSpacing:'0.18em', textTransform:'uppercase', textDecoration:'none', display:'inline-flex', alignItems:'center', gap:'8px'}}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                </svg>
+                Verify License · {doctor.license}
+              </a>
+            </div>
+
             <p style={{fontFamily:'var(--dp-sans)', fontSize:'16px', lineHeight:'1.72', opacity:'0.78', margin:'0'}}>
               {doctor.bio}
             </p>

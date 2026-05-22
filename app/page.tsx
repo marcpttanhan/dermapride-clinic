@@ -7,6 +7,7 @@ import Marquee from '@/components/site/Marquee'
 import Manifesto from '@/components/site/Manifesto'
 import Philosophy from '@/components/site/Philosophy'
 import Doctor from '@/components/site/Doctor'
+import Film from '@/components/site/Film'
 import Treatments from '@/components/site/Treatments'
 import Results from '@/components/site/Results'
 import Voices from '@/components/site/Voices'
@@ -48,6 +49,7 @@ export default async function HomePage() {
         <Manifesto />
         <Philosophy philosophy={data.philosophy} />
         <Doctor doctor={data.doctor} />
+        <Film procedures={data.procedures} />
         <Treatments procedures={data.procedures} />
         <Results results={data.results} />
         <Voices reviews={data.reviews} />

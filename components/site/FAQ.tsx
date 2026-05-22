@@ -12,7 +12,7 @@ export default function FAQ({ faq, contact }: Props) {
     <section className="dpe-faq dpe-chapter" id="faq" data-screen-label="14 FAQ">
       <div className="dpe-shell">
         <div className="dpe-faq-grid">
-          <div className="dpe-faq-side" data-veil>
+          <div className="dpe-faq-side" style={{position:'sticky', top:'120px', alignSelf:'start'}} data-veil>
             <div className="dpe-ch-num">Chapter 14 · Q&A</div>
             <h2 className="dpe-h-display" style={{marginTop:'20px'}}>คำถาม<br/><em>ที่พบบ่อย.</em></h2>
             <div className="ask">
